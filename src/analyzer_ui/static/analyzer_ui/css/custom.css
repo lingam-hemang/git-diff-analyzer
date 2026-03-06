@@ -1,0 +1,56 @@
+/* ── SQL / code blocks ─────────────────────────────────────────── */
+
+.sql-block {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 1rem;
+  font-size: 0.82rem;
+  overflow-x: auto;
+  white-space: pre;
+  margin-top: 0.25rem;
+}
+
+.sql-block-wrapper {
+  position: relative;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.75rem;
+  opacity: 0.7;
+  z-index: 1;
+}
+
+.copy-btn:hover {
+  opacity: 1;
+}
+
+/* ── Priority badges ───────────────────────────────────────────── */
+
+.badge.priority-high    { background-color: #dc3545 !important; }
+.badge.priority-medium  { background-color: #ffc107 !important; color: #212529 !important; }
+.badge.priority-low     { background-color: #6c757d !important; }
+
+/* ── Cards ─────────────────────────────────────────────────────── */
+
+.card {
+  border-radius: 8px;
+}
+
+.card-header h6,
+.card-header h5 {
+  font-weight: 600;
+}
+
+/* ── Misc ──────────────────────────────────────────────────────── */
+
+code {
+  font-size: 0.875em;
+}
+
+dl.row dt {
+  font-weight: 500;
+}

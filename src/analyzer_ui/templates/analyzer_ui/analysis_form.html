@@ -1,0 +1,117 @@
+{% extends "analyzer_ui/base.html" %}
+
+{% block title %}New Analysis — Git Diff Analyzer{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">Run New Analysis</h5>
+      </div>
+      <div class="card-body p-4">
+
+        <div class="alert alert-info mb-4">
+          Analysis calls your AI provider synchronously. This may take up to 2 minutes
+          depending on the diff size and provider speed.
+        </div>
+
+        <form method="post" id="analysis-form">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in form.non_field_errors %}
+                <p class="mb-0">{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label for="{{ form.repo_path.id_for_label }}" class="form-label fw-semibold">
+              Repository path <span class="text-danger">*</span>
+            </label>
+            {{ form.repo_path }}
+            {% if form.repo_path.errors %}
+              <div class="text-danger small mt-1">{{ form.repo_path.errors }}</div>
+            {% endif %}
+            <div class="form-text">Absolute path to the local git repository.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.provider.id_for_label }}" class="form-label fw-semibold">
+              AI Provider
+            </label>
+            {{ form.provider }}
+            {% if form.provider.errors %}
+              <div class="text-danger small mt-1">{{ form.provider.errors }}</div>
+            {% endif %}
+          </div>
+
+          <hr class="my-4">
+          <p class="text-muted small mb-3">
+            Specify <strong>either</strong> a single commit ref <strong>or</strong> a from/to range.
+          </p>
+
+          <div class="mb-3">
+            <label for="{{ form.commit.id_for_label }}" class="form-label fw-semibold">
+              Commit ref
+            </label>
+            {{ form.commit }}
+            {% if form.commit.errors %}
+              <div class="text-danger small mt-1">{{ form.commit.errors }}</div>
+            {% endif %}
+            <div class="form-text">e.g. <code>HEAD</code>, <code>abc123</code>, <code>v1.2.0</code></div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.from_ref.id_for_label }}" class="form-label fw-semibold">
+                From ref <span class="text-muted">(range start)</span>
+              </label>
+              {{ form.from_ref }}
+              {% if form.from_ref.errors %}
+                <div class="text-danger small mt-1">{{ form.from_ref.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.to_ref.id_for_label }}" class="form-label fw-semibold">
+                To ref <span class="text-muted">(range end)</span>
+              </label>
+              {{ form.to_ref }}
+              {% if form.to_ref.errors %}
+                <div class="text-danger small mt-1">{{ form.to_ref.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-success px-4" id="submit-btn">
+            Run Analysis
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Spinner overlay -->
+<div id="spinner-overlay" class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex
+     justify-content-center align-items-center" style="background:rgba(0,0,0,0.5); z-index:9999;">
+  <div class="text-center text-white">
+    <div class="spinner-border mb-3" role="status" style="width:3rem; height:3rem;"></div>
+    <p class="fs-5">Analyzing… please wait</p>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('analysis-form').addEventListener('submit', function() {
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('spinner-overlay').classList.remove('d-none');
+  document.getElementById('spinner-overlay').classList.add('d-flex');
+});
+</script>
+{% endblock %}

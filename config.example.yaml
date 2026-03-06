@@ -1,0 +1,48 @@
+# git-diff-analyzer configuration example
+# Copy to ~/.git-diff-analyzer.yaml and fill in your values.
+
+bedrock:
+  region: us-east-1
+  model_id: anthropic.claude-3-5-sonnet-20241022-v2:0
+  max_tokens: 4096
+  temperature: 0.1
+  # profile: my-aws-profile   # uncomment to use a named AWS profile
+
+ollama:
+  base_url: http://localhost:11434
+  model: llama3.1:8b
+  timeout: 120
+  max_tokens: 4096
+  temperature: 0.1
+
+output:
+  base_dir: output
+  docs_dir: output/docs
+  dml_dir: output/dml
+  create_dirs: true
+
+snowflake:
+  database: MY_DATABASE
+  schema_name: PUBLIC
+  warehouse: COMPUTE_WH
+  # role: SYSADMIN          # uncomment to set a default role
+  use_transactions: true    # wrap every script in BEGIN / ROLLBACK
+
+analysis:
+  max_diff_size: 50000       # total chars fed to AI per request
+  max_file_diff_size: 8000   # per-file cap before truncation
+  default_provider: ollama   # "bedrock" or "ollama"
+  verbose: false
+
+deployment:
+  mode: local                # "local" (CLI) or "aws" (Lambda)
+
+aws_lambda:
+  trigger_source: github     # "github", "codecommit", or "both"
+  # github_webhook_secret: whsec_...
+  # codecommit_repo_arn: arn:aws:codecommit:us-east-1:123456789:my-repo
+
+s3:
+  bucket: my-analysis-bucket
+  prefix: git-diff-analyzer/
+  # region: us-east-1

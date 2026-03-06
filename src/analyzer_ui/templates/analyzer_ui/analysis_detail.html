@@ -1,0 +1,328 @@
+{% extends "analyzer_ui/base.html" %}
+{% load analyzer_tags %}
+
+{% block title %}{{ analysis.commit_hash|truncate_hash }} — Git Diff Analyzer{% endblock %}
+
+{% block content %}
+
+<!-- Header / breadcrumb -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="{% url 'analyzer_ui:analysis-list' %}">Analyses</a></li>
+      <li class="breadcrumb-item active"><code>{{ analysis.commit_hash|truncate_hash }}</code></li>
+    </ol>
+  </nav>
+  <div>
+    <a href="{% url 'analyzer_ui:analysis-json' analysis.pk %}" class="btn btn-sm btn-outline-secondary" target="_blank">
+      JSON
+    </a>
+  </div>
+</div>
+
+<!-- 1. Commit header card -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header bg-dark text-white">
+    <h5 class="mb-0">
+      <code>{{ analysis.commit_hash|truncate_hash }}</code>
+      {% if analysis.has_breaking_changes %}
+        <span class="badge bg-danger ms-2">Breaking Changes</span>
+      {% endif %}
+    </h5>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted">Commit</dt>
+          <dd class="col-sm-8"><code>{{ analysis.commit_hash }}</code></dd>
+
+          <dt class="col-sm-4 text-muted">Author</dt>
+          <dd class="col-sm-8">{{ analysis.author }}</dd>
+
+          <dt class="col-sm-4 text-muted">Date</dt>
+          <dd class="col-sm-8">{{ analysis.timestamp|date:"Y-m-d H:i:s" }} UTC</dd>
+
+          <dt class="col-sm-4 text-muted">Message</dt>
+          <dd class="col-sm-8">{{ analysis.commit_message }}</dd>
+        </dl>
+      </div>
+      <div class="col-md-6">
+        <dl class="row mb-0">
+          <dt class="col-sm-5 text-muted">AI Model</dt>
+          <dd class="col-sm-7">{{ analysis.ai_provider }}/{{ analysis.ai_model }}</dd>
+
+          <dt class="col-sm-5 text-muted">Analyzed at</dt>
+          <dd class="col-sm-7">{{ analysis.analyzed_at|date:"Y-m-d H:i:s" }} UTC</dd>
+
+          <dt class="col-sm-5 text-muted">Schema changes</dt>
+          <dd class="col-sm-7">{{ analysis.total_schema_changes }}</dd>
+
+          <dt class="col-sm-5 text-muted">Data changes</dt>
+          <dd class="col-sm-7">{{ analysis.total_data_changes }}</dd>
+        </dl>
+      </div>
+    </div>
+    {% if analysis.parse_error %}
+    <div class="alert alert-warning mt-3 mb-0">
+      <strong>Parse warning:</strong> {{ analysis.parse_error }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 2. Summary -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header"><h6 class="mb-0">Summary</h6></div>
+  <div class="card-body">
+    {% if analysis.summary %}
+      <p class="mb-0">{{ analysis.summary }}</p>
+    {% else %}
+      <p class="text-muted mb-0">No summary available.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 3. Impact Assessment -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header"><h6 class="mb-0">Impact Assessment</h6></div>
+  <div class="card-body">
+    {% if analysis.impact_assessment %}
+      <p class="mb-0">{{ analysis.impact_assessment }}</p>
+    {% else %}
+      <p class="text-muted mb-0">No impact assessment available.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 4. Affected Objects -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header"><h6 class="mb-0">Affected Objects</h6></div>
+  <div class="card-body">
+
+    <h6 class="text-muted mb-2">Database Objects</h6>
+    {% if analysis.affected_db_objects %}
+    <div class="table-responsive mb-3">
+      <table class="table table-sm table-bordered">
+        <thead class="table-light">
+          <tr><th>Type</th><th>Object</th><th>Action</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          {% for obj in analysis.affected_db_objects %}
+          <tr>
+            <td><code>{{ obj.object_type }}</code></td>
+            <td><code>{{ obj.object_name }}</code></td>
+            <td><span class="badge bg-secondary">{{ obj.action }}</span></td>
+            <td>{{ obj.description }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-muted small mb-3">No affected database objects detected.</p>
+    {% endif %}
+
+    <h6 class="text-muted mb-2">Code Objects</h6>
+    {% if analysis.affected_code_objects %}
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered">
+        <thead class="table-light">
+          <tr><th>Type</th><th>Object</th><th>Action</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          {% for obj in analysis.affected_code_objects %}
+          <tr>
+            <td><code>{{ obj.object_type }}</code></td>
+            <td><code>{{ obj.object_name }}</code></td>
+            <td><span class="badge bg-secondary">{{ obj.action }}</span></td>
+            <td>{{ obj.description }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-muted small mb-0">No affected code objects detected.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 5. Schema Changes -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header">
+    <h6 class="mb-0">Schema Changes ({{ analysis.total_schema_changes }})</h6>
+  </div>
+  <div class="card-body">
+    {% if analysis.schema_changes %}
+      {% for sc in analysis.schema_changes %}
+      <div class="mb-4">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <strong>{{ forloop.counter }}. {{ sc.change_type }} — {{ sc.table }}</strong>
+          {% if sc.is_breaking %}
+            <span class="badge bg-danger">BREAKING</span>
+          {% endif %}
+        </div>
+        <p class="mb-1 text-secondary small">{{ sc.description }}</p>
+        {% if sc.migration_notes %}
+          <p class="text-muted fst-italic small mb-1">Notes: {{ sc.migration_notes }}</p>
+        {% endif %}
+        <div class="sql-block-wrapper position-relative">
+          <button class="btn btn-sm btn-outline-secondary copy-btn" data-target="sc-{{ forloop.counter }}">
+            Copy
+          </button>
+          <pre id="sc-{{ forloop.counter }}" class="sql-block"><code>{{ sc.snowflake_sql }}</code></pre>
+        </div>
+      </div>
+      {% if not forloop.last %}<hr>{% endif %}
+      {% endfor %}
+    {% else %}
+      <p class="text-muted mb-0">No schema changes detected.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 6. Data Changes -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header">
+    <h6 class="mb-0">Data Changes ({{ analysis.total_data_changes }})</h6>
+  </div>
+  <div class="card-body">
+    {% if analysis.data_changes %}
+      {% for dc in analysis.data_changes %}
+      <div class="mb-4">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <strong>{{ forloop.counter }}. {{ dc.operation }} — {{ dc.table }}</strong>
+          {% if dc.requires_ddl_first %}
+            <span class="badge bg-warning text-dark">Requires DDL first</span>
+          {% endif %}
+        </div>
+        <p class="mb-1 text-secondary small">{{ dc.description }}</p>
+        {% if dc.depends_on_table %}
+          <p class="text-muted fst-italic small mb-1">Depends on: {{ dc.depends_on_table }}</p>
+        {% endif %}
+        <div class="sql-block-wrapper position-relative">
+          <button class="btn btn-sm btn-outline-secondary copy-btn" data-target="dc-{{ forloop.counter }}">
+            Copy
+          </button>
+          <pre id="dc-{{ forloop.counter }}" class="sql-block"><code>{{ dc.snowflake_sql }}</code></pre>
+        </div>
+      </div>
+      {% if not forloop.last %}<hr>{% endif %}
+      {% endfor %}
+    {% else %}
+      <p class="text-muted mb-0">No data changes detected.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 7. Recommendations -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header">
+    <h6 class="mb-0">Recommendations ({{ analysis.recommendations|length }})</h6>
+  </div>
+  <div class="card-body">
+    {% if analysis.recommendations %}
+      <ul class="list-group list-group-flush">
+        {% for rec in analysis.recommendations %}
+        <li class="list-group-item d-flex align-items-start gap-2 px-0">
+          <span class="badge bg-{{ rec.priority|priority_class }} mt-1">{{ rec.priority|upper }}</span>
+          <div>
+            <strong class="text-muted small">{{ rec.category }}</strong>
+            <p class="mb-0">{{ rec.text }}</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted mb-0">No recommendations.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 8. Scripts -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header"><h6 class="mb-0">Generated Scripts</h6></div>
+  <div class="card-body">
+    {% if scripts %}
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>#</th><th>Type</th><th>Filename</th><th>Table</th><th>Description</th>
+            <th>Breaking</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for script in scripts %}
+          <tr>
+            <td>{{ script.sequence }}</td>
+            <td>
+              {% if script.script_type == "DDL" %}
+                <span class="badge bg-primary">DDL</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">DML</span>
+              {% endif %}
+            </td>
+            <td><code>{{ script.filename }}</code></td>
+            <td><code>{{ script.table }}</code></td>
+            <td class="small text-muted">{{ script.description|truncatechars:60 }}</td>
+            <td>
+              {% if script.is_breaking %}
+                <span class="badge bg-danger">Yes</span>
+              {% else %}
+                <span class="badge bg-success">No</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'analyzer_ui:download-script' analysis.pk script.pk %}"
+                 class="btn btn-sm btn-outline-secondary">
+                Download
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-muted mb-0">No scripts generated.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 9. Download bar -->
+<div class="d-flex gap-2 mb-5">
+  {% if analysis.pdf_file %}
+    <a href="{% url 'analyzer_ui:download-pdf' analysis.pk %}" class="btn btn-primary">
+      Download PDF Report
+    </a>
+  {% else %}
+    <button class="btn btn-primary" disabled>PDF Not Available</button>
+  {% endif %}
+
+  {% if scripts %}
+    <a href="{% url 'analyzer_ui:download-all-scripts' analysis.pk %}" class="btn btn-outline-secondary">
+      Download All Scripts (ZIP)
+    </a>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.getAttribute('data-target');
+    const pre = document.getElementById(targetId);
+    if (pre) {
+      navigator.clipboard.writeText(pre.innerText).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 1500);
+      });
+    }
+  });
+});
+</script>
+{% endblock %}
