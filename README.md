@@ -26,6 +26,7 @@ Supports two AI backends: **AWS Bedrock** (Claude) and **local Ollama** models.
 ## Project Structure
 
 ```
+git-diff-analyzer/
 ├── pyproject.toml
 ├── config.example.yaml          # Copy this to ~/.git-diff-analyzer.yaml
 ├── src/git_diff_analyzer/
