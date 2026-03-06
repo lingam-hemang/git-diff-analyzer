@@ -46,7 +46,6 @@ git-diff-analyzer/
 │       ├── pdf_generator.py     # PDF report (fpdf2)
 │       ├── dml_generator.py     # Snowflake SQL scripts
 │       └── s3_uploader.py       # S3 upload helper (boto3)
-├── tests/                       # pytest test suite
 └── output/
     ├── docs/                    # Generated PDFs
     └── dml/                     # Generated SQL scripts
@@ -68,8 +67,8 @@ git-diff-analyzer/
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_ORG/YOUR_REPO_NAME.git
-cd YOUR_REPO_NAME
+git clone https://github.com/lingam-hemang/git-diff-analyzer.git
+cd git-diff-analyzer
 
 # Create and activate a virtual environment
 python -m venv .venv
@@ -82,8 +81,6 @@ pip install -e ".[dev]"
 # Verify installation
 git-diff-analyzer --help
 ```
-
-> **Replace** `YOUR_ORG/YOUR_REPO_NAME` with your actual GitHub repository path.
 
 ---
 
@@ -344,21 +341,6 @@ output/dml/abc123def456/
 
 Each script is wrapped in `BEGIN TRANSACTION; ... ROLLBACK;` by default. Review and replace `ROLLBACK` with `COMMIT` when you are satisfied with the changes.
 
----
-
-## Running Tests
-
-```bash
-# Run all tests
-pytest -v
-
-# Run with coverage report
-pytest --cov=git_diff_analyzer --cov-report=html
-
-# Run a specific test file
-pytest tests/test_git_integration.py -v
-pytest tests/test_pdf_generator.py -v
-```
 
 ---
 
@@ -366,17 +348,16 @@ pytest tests/test_pdf_generator.py -v
 
 | Item | Value |
 |------|-------|
-| GitHub repository | `https://github.com/YOUR_ORG/YOUR_REPO_NAME` |
-| Issue tracker | `https://github.com/YOUR_ORG/YOUR_REPO_NAME/issues` |
-| Pull requests | `https://github.com/YOUR_ORG/YOUR_REPO_NAME/pulls` |
+| GitHub repository | `https://github.com/lingam-hemang/git-diff-analyzer` |
+| Issue tracker | `https://github.com/lingam-hemang/git-diff-analyzer/issues` |
+| Pull requests | `https://github.com/lingam-hemang/git-diff-analyzer/pulls` |
 
-> **Update the placeholders above** (`YOUR_ORG`, `YOUR_REPO_NAME`) once you have pushed this project to GitHub.
 
 ### Development setup
 
 ```bash
-git clone https://github.com/YOUR_ORG/YOUR_REPO_NAME.git
-cd YOUR_REPO_NAME
+git clone https://github.com/lingam-hemang/git-diff-analyzer.git
+cd git-diff-analyzer
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 ```
